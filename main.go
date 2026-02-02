@@ -54,13 +54,13 @@ func main() {
 	http.HandleFunc("/api/categories", categoryHandler.HandleCategories)
 	http.HandleFunc("/api/categories/", categoryHandler.HandleCategoryByID)
 
-	// Product
-	productRepo := repositories.NewInventoryRepository(db)
-	productService := services.NewInventoryService(productRepo)
-	productHandler := handlers.NewInventoryHandler(productService)
+	// Inventory
+	inventoryRepo := repositories.NewInventoryRepository(db)
+	inventoryService := services.NewInventoryService(inventoryRepo)
+	inventoryHandler := handlers.NewInventoryHandler(inventoryService)
 
-	http.HandleFunc("/api/products", productHandler.HandleInventory)
-	http.HandleFunc("/api/products/", productHandler.HandleInventoryByID)
+	http.HandleFunc("/api/products", inventoryHandler.HandleInventory)
+	http.HandleFunc("/api/products/", inventoryHandler.HandleInventoryByID)
 
 	// GET localhost:8080/health
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
