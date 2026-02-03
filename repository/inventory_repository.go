@@ -89,7 +89,7 @@ func (repo *InventoryRepository) Create(inventory *models.Inventory) error {
  */
 func (repo *InventoryRepository) GetByID(id int) (*models.Inventory, error) {
 	query := `
-		SELECT
+		SELECT 
 			i.id,
 			i.name,
 			i.description,
@@ -98,7 +98,7 @@ func (repo *InventoryRepository) GetByID(id int) (*models.Inventory, error) {
 			c.name,
 			c.description
 		FROM inventory i
-		LEFT JOIN categories c ON i.category = c.id
+		LEFT JOIN categories c ON i.id = c.category
 	WHERE i.id = $1
 	`
 
