@@ -1,59 +1,38 @@
-package services
+package service
 
 import (
-	"kasir.api/models"
-	"kasir.api/repositories"
+	"errors"
+
+	"kasir.api/domain"
+	"kasir.api/repository"
 )
 
 type InventoryService struct {
-	repo *repositories.InventoryRepository
+	repo repository.InventoryRepository
 }
 
-func NewInventoryService(repo *repositories.InventoryRepository) *InventoryService {
-	return &InventoryService{repo: repo}
+func NewInventoryService(r repository.InventoryRepository) *InventoryService {
+	return &InventoryService{r}
 }
 
-func (s *InventoryService) GetAll() ([]models.Inventory, error) {
-	return s.repo.GetAll()
-}
-
-func (s *InventoryService) Create(req models.CreateInventoryRequest) (*models.Inventory, error) {
-	inventory := &models.Inventory{
-		Name:  req.Name,
-		Stock: req.Stock,
-		Category: models.Category{
-			ID: req.CategoryID,
-		},
+func (s *InventoryService) Create(inv *domain.Inventory) error {
+	if inv.Stock < 0 {
+		return errors.New("stock cannot be negative")
 	}
-
-	if err := s.repo.Create(inventory); err != nil {
-		return nil, err
-	}
-
-	return inventory, nil
+	return s.repo.Create(inv)
 }
 
-func (s *InventoryService) GetByID(id int) (*models.Inventory, error) {
-	return s.repo.GetByID(id)
+func (s *InventoryService) GetAll() ([]domain.Inventory, error) {
+	return s.repo.FindAll()
 }
 
-func (s *InventoryService) Update(id int, req models.UpdateInventoryRequest) (*models.Inventory, error) {
-	inventory := &models.Inventory{
-		ID:    id,
-		Name:  req.Name,
-		Stock: req.Stock,
-		Category: models.Category{
-			ID: req.CategoryID,
-		},
+func (s *InventoryService) Update(id string, inv *domain.Inventory) error {
+	if inv.Stock < 0 {
+		return errors.New("stock cannot be negative")
 	}
-
-	if err := s.repo.Update(inventory); err != nil {
-		return nil, err
-	}
-
-	return inventory, nil
+	return s.repo.Update(id, inv)
 }
 
-func (s *InventoryService) Delete(id int) error {
+func (s *InventoryService) Delete(id string) error {
 	return s.repo.Delete(id)
 }

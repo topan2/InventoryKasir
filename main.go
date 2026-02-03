@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -9,23 +9,18 @@ import (
 
 	"github.com/spf13/viper"
 	"kasir.api/database"
-	"kasir.api/handlers"
-	"kasir.api/libs"
-	"kasir.api/repositories"
-	"kasir.api/services"
+	"kasir.api/handler"
+	"kasir.api/repository"
+	"kasir.api/routes"
+	service "kasir.api/services"
 )
 
-// Config struct
 type Config struct {
 	Port   string `mapstructure:"PORT"`
 	DBConn string `mapstructure:"DB_CONN"`
 }
 
-/*
- * Main Function
- */
 func main() {
-
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
@@ -39,39 +34,32 @@ func main() {
 		DBConn: viper.GetString("DB_CONN"),
 	}
 
-	// Setup database
 	db, err := database.InitDB(config.DBConn)
 	if err != nil {
-		log.Fatal("Failed to initialize database: ", err)
+		log.Fatal("Failed to initialize database:", err)
 	}
 	defer db.Close()
 
-	// Category
-	categoryRepo := repositories.NewCategoryRepository(db)
-	categoryService := services.NewCategoryService(categoryRepo)
-	categoryHandler := handlers.NewCategoryHandler(categoryService)
+	repo := repository.NewInventoryPostgres(db)
+	svc := service.NewInventoryService(repo)
+	h := handler.NewInventoryHandler(svc)
 
-	http.HandleFunc("/api/categories", categoryHandler.HandleCategories)
-	http.HandleFunc("/api/categories/", categoryHandler.HandleCategoryByID)
+	routes.RegisterRoutes(h)
 
-	// Inventory
-	inventoryRepo := repositories.NewInventoryRepository(db)
-	inventoryService := services.NewInventoryService(inventoryRepo)
-	inventoryHandler := handlers.NewInventoryHandler(inventoryService)
-
-	http.HandleFunc("/api/products", inventoryHandler.HandleInventory)
-	http.HandleFunc("/api/products/", inventoryHandler.HandleInventoryByID)
-
-	// GET localhost:8080/health
+	// localhost:8080/health
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		libs.HandleResponse(http.StatusOK, w, nil, "API running")
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "OK",
+			"message": "API Running",
+		})
 	})
 
-	// Running Server di port 8080
-	addr := "0.0.0.0:" + config.Port
-	fmt.Println("server running di", addr)
-	err = http.ListenAndServe(addr, nil)
-	if err != nil {
-		fmt.Println("gagal running server")
+	port := config.Port
+	if port == "" {
+		port = "8080"
 	}
+
+	log.Println("Server running on", port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
