@@ -53,16 +53,6 @@ func main() {
 		h.DailySales(w, r)
 	})
 
-	//http.HandleFunc("/reports/sales", func(w http.ResponseWriter, r *http.Request) {
-	//	h := handler.NewReportHandler(repository.NewReportRepository(database.GetDB()), reportService)
-	//	h.GetSalesReport(w, r)
-	//})
-
-	//http.HandleFunc("/reports/best-seller", func(w http.ResponseWriter, r *http.Request) {
-	//	h := handler.NewReportHandler(repository.NewReportRepository(database.GetDB()), reportService)
-	//	h.BestSeller(w, r)
-	//})
-
 	// Transaction
 	transactionRepo := repository.NewTransactionRepository(db)
 	transactionService := service.NewTransactionService(transactionRepo)
