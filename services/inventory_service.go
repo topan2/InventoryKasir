@@ -12,21 +12,21 @@ type InventoryService struct {
 }
 
 func NewInventoryService(r repository.InventoryRepository) *InventoryService {
-	return &InventoryService{r}
+	return &InventoryService{repo: r}
 }
 
-func (s *InventoryService) Create(inv *domain.Inventory) error {
+func (s *InventoryService) Create(inv *domain.Inventories) error {
 	if inv.Stock < 0 {
 		return errors.New("stock cannot be negative")
 	}
 	return s.repo.Create(inv)
 }
 
-func (s *InventoryService) GetAll() ([]domain.Inventory, error) {
-	return s.repo.FindAll()
+func (s *InventoryService) GetAll(name string) ([]domain.Inventories, error) {
+	return s.repo.GetAll(name)
 }
 
-func (s *InventoryService) Update(id string, inv *domain.Inventory) error {
+func (s *InventoryService) Update(id string, inv *domain.Inventories) error {
 	if inv.Stock < 0 {
 		return errors.New("stock cannot be negative")
 	}

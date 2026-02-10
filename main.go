@@ -44,7 +44,34 @@ func main() {
 	svc := service.NewInventoryService(repo)
 	h := handler.NewInventoryHandler(svc)
 
-	routes.RegisterRoutes(h)
+	reportRepo := repository.NewReportRepository(db)
+	reportService := service.NewReportService(reportRepo)
+	reportHandler := handler.NewReportHandler(reportRepo, reportService)
+
+	http.HandleFunc("/reports/daily-sales", func(w http.ResponseWriter, r *http.Request) {
+		h := handler.NewReportHandler(repository.NewReportRepository(database.GetDB()), reportService)
+		h.DailySales(w, r)
+	})
+
+	//http.HandleFunc("/reports/sales", func(w http.ResponseWriter, r *http.Request) {
+	//	h := handler.NewReportHandler(repository.NewReportRepository(database.GetDB()), reportService)
+	//	h.GetSalesReport(w, r)
+	//})
+
+	//http.HandleFunc("/reports/best-seller", func(w http.ResponseWriter, r *http.Request) {
+	//	h := handler.NewReportHandler(repository.NewReportRepository(database.GetDB()), reportService)
+	//	h.BestSeller(w, r)
+	//})
+
+	// Transaction
+	transactionRepo := repository.NewTransactionRepository(db)
+	transactionService := service.NewTransactionService(transactionRepo)
+	transactionHandler := handler.NewTransactionHandler(transactionService)
+
+	http.HandleFunc("/checkout", transactionHandler.HandleCheckout)
+
+	// Register routes
+	routes.RegisterRoutes(h, reportHandler, transactionHandler)
 
 	// localhost:8080/health
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -62,4 +89,10 @@ func main() {
 
 	log.Println("Server running on", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
+
+	http.HandleFunc("/reports/sales", func(w http.ResponseWriter, r *http.Request) {
+		h := handler.NewReportHandler(repository.NewReportRepository(database.GetDB()), reportService)
+		h.DailySales(w, r)
+	})
+
 }

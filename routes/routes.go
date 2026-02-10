@@ -6,7 +6,8 @@ import (
 	"kasir.api/handler"
 )
 
-func RegisterRoutes(h *handler.InventoryHandler) {
+func RegisterRoutes(h *handler.InventoryHandler, reportHandler *handler.ReportHandler, transactionHandler *handler.TransactionHandler) {
+
 	http.HandleFunc("/inventories", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case "GET":
@@ -19,4 +20,15 @@ func RegisterRoutes(h *handler.InventoryHandler) {
 			h.Delete(w, r)
 		}
 	})
+
+	// Endpoint report sales
+	http.HandleFunc("/reports/sales", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		reportHandler.GetSalesReport(w, r)
+	})
+
 }

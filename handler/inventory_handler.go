@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"kasir.api/domain"
@@ -17,7 +18,7 @@ func NewInventoryHandler(s *service.InventoryService) *InventoryHandler {
 }
 
 func (h *InventoryHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var inv domain.Inventory
+	var inv domain.Inventories
 	json.NewDecoder(r.Body).Decode(&inv)
 
 	if err := h.service.Create(&inv); err != nil {
@@ -28,7 +29,9 @@ func (h *InventoryHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *InventoryHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	data, err := h.service.GetAll()
+	name := r.URL.Query().Get("name")
+	fmt.Println(name)
+	data, err := h.service.GetAll(name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -39,7 +42,7 @@ func (h *InventoryHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 func (h *InventoryHandler) Update(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 
-	var inv domain.Inventory
+	var inv domain.Inventories
 	json.NewDecoder(r.Body).Decode(&inv)
 
 	if err := h.service.Update(id, &inv); err != nil {
